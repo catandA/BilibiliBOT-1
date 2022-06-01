@@ -4,4 +4,4 @@ shiro:
   plugin-list:
     - com.catand.bilibilibot1.plugin.LogPlugin
     - com.catand.bilibilibot1.plugin.CatandPlugin
-    - com.catand.bilibilibot1.plugin.HelpPlugin
+    - com.catand.bilibilibot1.plugin.TestPlugin

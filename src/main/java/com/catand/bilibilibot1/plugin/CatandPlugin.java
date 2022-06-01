@@ -1,12 +1,13 @@
 package com.catand.bilibilibot1.plugin;
 
 import com.catand.bilibilibot1.BilibiliBot1Application;
-import com.catand.bilibilibot1.JSONUtil.HttpsUtil;
-import com.catand.bilibilibot1.JSONUtil.API.BilibiliAPI;
-import com.catand.bilibilibot1.JSONUtil.Timer1;
-import com.catand.bilibilibot1.JSONUtil.config.Config;
+import com.catand.bilibilibot1.Util.BilibiliUtil;
+import com.catand.bilibilibot1.Util.JSONUtil.JSONUtil;
+import com.catand.bilibilibot1.Util.Timer1;
+import com.catand.bilibilibot1.Util.JSONUtil.config.Config;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mikuac.shiro.bean.MsgChainBean;
 import com.mikuac.shiro.common.utils.MsgUtils;
 import com.mikuac.shiro.core.Bot;
 import com.mikuac.shiro.core.BotPlugin;
@@ -20,13 +21,13 @@ import java.util.*;
 @Component
 public class CatandPlugin extends BotPlugin {
 	final static long GROUP = 933121309L;
+	final static long GROUPTEST = 180901798L;
 	final static String[] WEEK = {"日", "一", "二", "三", "四", "五", "六"};
-	;
 	static Bot bot;
 	static File content;
 	static BufferedWriter bufferedWriter;
 	static MsgUtils sendMsg;
-	static Timer1 timer1;
+	static Timer1 timer1 = new Timer1();
 	static int random;
 
 	static {
@@ -42,18 +43,39 @@ public class CatandPlugin extends BotPlugin {
 			System.out.println("未找到配置文件\"content.json\"，请添加后重新启动");
 			BilibiliBot1Application.exitApplication();
 		}
+		timer1.TimerManager();
 	}
 
 	@Override
 	public int onGroupMessage(@NotNull Bot bot, @NotNull GroupMessageEvent event) {
-		if (Objects.isNull(timer1)) {
-			timer1 = new Timer1();
-		}
 		String messageRaw = event.getRawMessage();
 		CatandPlugin.bot = bot;
 		if ("视频推荐".equals(messageRaw)) {
 			share();
 		}
+
+		//bilibili直链解析
+		if (messageRaw.contains(BilibiliUtil.BILI_LINK_IDENTIFIER)) {
+			sendMsg = BilibiliUtil.getbilibiliFormatMsgFromLink(messageRaw);
+			bot.sendGroupMsg(event.getGroupId(), sendMsg.build(), false);
+		}
+
+		//TODO
+		//bilibili站外分享解析
+/*
+		if (messageRaw.contains("com.tencent.miniapp_01") && messageRaw.contains("哔哩哔哩")) {
+			MsgChainBean msgChainBean = event.getArrayMsg().get(1);
+			if (msgChainBean.getType().equals("json")) {
+				String map = msgChainBean.getData().toString();
+				String JSON = map.substring(6,map.length() - 1);
+				if (JSONUtil.isValidJSON(JSON)) {
+					sendMsg = BilibiliUtil.getbilibiliFormatMsgFromMiniappJSON(JSON);
+					bot.sendGroupMsg(event.getGroupId(), sendMsg.build(), false);
+				}
+			}
+		}
+*/
+
 		return MESSAGE_IGNORE;
 	}
 
@@ -62,76 +84,36 @@ public class CatandPlugin extends BotPlugin {
 			//读取本地JSON
 			ObjectMapper objectMapper = new ObjectMapper();
 			Config config;
-			config = objectMapper.readValue(content, new TypeReference<Config>() {
+			config = objectMapper.readValue(CatandPlugin.content, new TypeReference<Config>() {
 			});
 
 			//选择随机成员
 			Random random = new Random();
 			CatandPlugin.random = random.nextInt(config.getBilibilis().size());
-
-			//获取哔哩哔哩API数据
 			String BV = config.getBilibilis().get(CatandPlugin.random).getUrl();
-			sendMsg = bilibiliMsg(BV);
-			bot.sendGroupMsg(GROUP, sendMsg.build(), false);
-		} catch (Exception e) {
-			e.printStackTrace();
-			sendMsg = MsgUtils.builder().text("你妈，出错了，快去叫人调试");
-			bot.sendGroupMsg(GROUP, sendMsg.build(), false);
-		}
 
-
-	}
-
-	public static MsgUtils bilibiliMsg(String BV) {
-		try {
-			//从哔哩哔哩API获取数据
-			ObjectMapper objectMapper = new ObjectMapper();
-			String url = "https://api.bilibili.com/x/web-interface/view?bvid=" + BV;
-			byte[] bytes = HttpsUtil.doGet(url);
-			String BILIAPIHTTPS = new String(bytes, "utf-8");
-
-			//读取本地JSON
-			Config config;
-			config = objectMapper.readValue(content, new TypeReference<Config>() {
-			});
-
-			//构造消息
-			BilibiliAPI bilitAPI;
-			bilitAPI = objectMapper.readValue(BILIAPIHTTPS, new TypeReference<BilibiliAPI>() {
-			});
+			//构造消息头部
 			Calendar c = Calendar.getInstance();
 			sendMsg = MsgUtils.builder().text(String.format("[%d月%d日星期%s]今天推荐的%s是:",
-							c.get(Calendar.MONTH)+1,
-							c.get(Calendar.DAY_OF_MONTH),
-							WEEK[c.get(Calendar.DAY_OF_WEEK) - 1],
-							config.getBilibilis().get(CatandPlugin.random).getType()
-					))
-					.img(bilitAPI.getData().getPic())
-					.text(String.format("\n%s\n" +
-									"UP:%s\n" +
-									"播放:%s 弹幕:%s\n" +
-									"投币:%s 点赞:%s\n" +
-									"评论:%s 分享:%s\n" +
-									"https://www.bilibili.com/video/%s"
-							, bilitAPI.getData().getTitle()
-							, bilitAPI.getData().getOwner().getName()
-							, bilitAPI.getData().getStat().getView()
-							, bilitAPI.getData().getStat().getDanmaku()
-							, bilitAPI.getData().getStat().getCoin()
-							, bilitAPI.getData().getStat().getLike()
-							, bilitAPI.getData().getStat().getReply()
-							, bilitAPI.getData().getStat().getShare()
-							, BV
-					));
-			return sendMsg;
+					c.get(Calendar.MONTH) + 1,
+					c.get(Calendar.DAY_OF_MONTH),
+					WEEK[c.get(Calendar.DAY_OF_WEEK) - 1],
+					config.getBilibilis().get(CatandPlugin.random).getType()
+			));
+
+			//获取视频详情并拼接消息
+			StringBuffer sb = new StringBuffer(sendMsg.build()).append(BilibiliUtil.bilibiliFormatMsgBuilder(BV).build());
+			String msg = String.valueOf(sb);
+			bot.sendGroupMsg(GROUP, msg, false);
+
 		} catch (Exception e) {
 			e.printStackTrace();
-			MsgUtils sendMsg = MsgUtils.builder().text("你妈，出错了，快去叫人调试");
-			return sendMsg;
+			sendMsg = MsgUtils.builder().text("出错了，快去叫人调试");
+			bot.sendGroupMsg(GROUP, sendMsg.build(), false);
 		}
-	}
 
-    /*
+	}
+	/*
     //TODO 临时用来往JSON添加数据
     @Override
     public int onPrivateMessage(@NotNull Bot bot, @NotNull PrivateMessageEvent event) {

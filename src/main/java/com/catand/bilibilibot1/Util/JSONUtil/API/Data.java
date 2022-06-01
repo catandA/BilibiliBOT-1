@@ -1,6 +1,5 @@
-package com.catand.bilibilibot1.JSONUtil.API;
+package com.catand.bilibilibot1.Util.JSONUtil.API;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import java.util.List;

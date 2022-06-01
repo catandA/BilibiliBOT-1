@@ -1,4 +1,4 @@
-package com.catand.bilibilibot1.JSONUtil.API;
+package com.catand.bilibilibot1.Util.JSONUtil.API;
 
 import lombok.Data;
 
