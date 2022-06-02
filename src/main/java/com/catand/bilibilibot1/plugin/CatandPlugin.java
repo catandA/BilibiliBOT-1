@@ -60,8 +60,7 @@ public class CatandPlugin extends BotPlugin {
 			bot.sendGroupMsg(event.getGroupId(), sendMsg.build(), false);
 		}
 
-		//TODO
-		//bilibili站外分享解析
+		//TODO bilibili站外分享解析
 /*
 		if (messageRaw.contains("com.tencent.miniapp_01") && messageRaw.contains("哔哩哔哩")) {
 			MsgChainBean msgChainBean = event.getArrayMsg().get(1);
@@ -114,7 +113,7 @@ public class CatandPlugin extends BotPlugin {
 
 	}
 	/*
-    //TODO 临时用来往JSON添加数据
+    //TODO 从QQ往JSON添加数据
     @Override
     public int onPrivateMessage(@NotNull Bot bot, @NotNull PrivateMessageEvent event) {
         String messageRaw = event.getRawMessage();
