@@ -20,8 +20,11 @@ import java.util.*;
 
 @Component
 public class CatandPlugin extends BotPlugin {
+
+	//TODO 使用外部配置文件来指定目标发送群聊
 	final static long GROUP = 933121309L;
 	final static long GROUPTEST = 180901798L;
+
 	final static String[] WEEK = {"日", "一", "二", "三", "四", "五", "六"};
 	static Bot bot;
 	static File content;
