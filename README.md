@@ -19,7 +19,7 @@
 - 自动解析聊天里面的哔哩哔哩直链分享并显示出完整信息
 
 示例：
-![](.README_images/9584a2c7.png)
+![示例](https://github.com/catandA/BilibiliBOT-1/blob/main/.README_images/9584a2c7.png)
 
 ## 技术框架
 
