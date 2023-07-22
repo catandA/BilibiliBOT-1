@@ -2,19 +2,31 @@
 
 ## 导入本项目
 
-想要导入本项目,可以直接使用git `clone` 本项目的地址:[https://github.com/catandA/BilibiliBOT-1.git](https://github.com/catandA/BilibiliBOT-1.git)
-也可以直接下载ZIP包,将其解压之后使用IDE加载
+想要导入本项目,可以使用`git clone https://github.com/catandA/BilibiliBOT-1.git` 进行克隆
+也可以直接下载ZIP, 将其解压之后在IDE中导入
 
 ## 运行本项目
 
 此项目使用了Maven包管理器,在引入之后需要导入相关依赖,导入完成后打包成jar就可以进行初次运行测试
 (或是直接运行release的jar包: 在有 `java` 的环境中执行 `java -jar BiliBiliBOT-1-X.X.X.jar` )
 
+如果要配置自定义设置文件目录, 请使用JVM参数`-DconfigFile=<configPath>`
+
+## JVM参数说明
+
+### -DconfigFile
+
+> 已知问题: 由于自动创建JSON没有写, 需要自己创建好这个Json, [格式参考](#配置文件说明)
+
+设置配置文件路径, 不填则为 ./content.json
+
 ## 配置文件
+
+> 具体格式: [Click here](README.md#配置文件说明)
 
 运行后会检测当前目录的 `content.json` 文件,如果不存在则程序会自动退出
 content里面存储有需要指定推荐的视频, 默认设置是每天早上八点自动推荐
-目标QQ群目前使用CatandPlugin.GROUP变量进行存储
+targetGroups为目标群组(可以为多个)
 
 ## 连接客户端
 
@@ -51,14 +63,6 @@ servers:
       # 反向WS Universal 地址
       # 注意 设置了此项地址后下面两项将会被忽略
       universal: ws://127.0.0.1:5000/ws/shiro
-      # 反向WS API 地址
-      api: ws://your_websocket_api.server
-      # 反向WS Event 地址
-      event: ws://your_websocket_event.server
-      # 重连间隔 单位毫秒
-      reconnect-interval: 3000
-      middlewares:
-        <<: *default # 引用默认中间件
 ```
 
 之后运行 `go-cqhttp` ，若待登录成功后， `go-cqhttp` 应该会和 `catandBOT_Shiro` 建立连接

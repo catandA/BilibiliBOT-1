@@ -21,6 +21,18 @@
 示例：
 ![示例](https://github.com/catandA/BilibiliBOT-1/blob/main/.README_images/9584a2c7.png)
 
+## JVM参数说明
+
+### -DconfigFile
+
+> 已知问题: 由于自动创建JSON没有写, 需要自己创建好这个Json, [格式参考](#配置文件说明)
+
+设置配置文件路径, 不填则为 ./content.json
+
+```shell
+java -DconfigFile=~/bot/config-dir/config.json -jar ~/bot/bot.jar
+```
+
 ## 配置文件说明
 
 > 实际JSON不存在注释, 下方代码带有注释仅为帮助理解
