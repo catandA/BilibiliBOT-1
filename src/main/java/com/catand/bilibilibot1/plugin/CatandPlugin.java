@@ -1,13 +1,11 @@
 package com.catand.bilibilibot1.plugin;
 
-import com.catand.bilibilibot1.BilibiliBot1Application;
-import com.catand.bilibilibot1.Util.BilibiliUtil;
-import com.catand.bilibilibot1.Util.JSONUtil.JSONUtil;
-import com.catand.bilibilibot1.Util.Timer1;
-import com.catand.bilibilibot1.Util.JSONUtil.config.Config;
+import com.catand.bilibilibot1.BotApplication;
+import com.catand.bilibilibot1.util.BilibiliUtil;
+import com.catand.bilibilibot1.util.DayTimer;
+import com.catand.bilibilibot1.util.json.config.Config;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mikuac.shiro.bean.MsgChainBean;
 import com.mikuac.shiro.common.utils.MsgUtils;
 import com.mikuac.shiro.core.Bot;
 import com.mikuac.shiro.core.BotPlugin;
@@ -15,55 +13,103 @@ import com.mikuac.shiro.dto.event.message.GroupMessageEvent;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.util.Calendar;
+import java.util.List;
+import java.util.Random;
+import java.util.regex.Pattern;
 
 @Component
 public class CatandPlugin extends BotPlugin {
 
-	//TODO 使用外部配置文件来指定目标发送群聊
-	final static long GROUP = 933121309L;
-	final static long GROUPTEST = 180901798L;
+	public final static Pattern bilibiliUrlPattern = Pattern.compile("(http:)?(https:)?(//)?((([a-zA-Z0-9_-])+(\\.)?){1,2}\\.)?(bilibili.com)+(:\\d+)?(/((\\.)?(\\?)?=?&?%?[#!a-zA-Z0-9_-](\\?)?)*)*$");
 
-	final static String[] WEEK = {"日", "一", "二", "三", "四", "五", "六"};
-	static Bot bot;
-	static File content;
-	static BufferedWriter bufferedWriter;
-	static MsgUtils sendMsg;
-	static Timer1 timer1 = new Timer1();
-	static int random;
+    private final static String[] WEEK = {"日", "一", "二", "三", "四", "五", "六"};
+	private static Bot bot;
+	private static final File content;
+	private static final DayTimer DAY_TIMER = new DayTimer();
+	private static int random;
 
-	static {
-		//获取jar当前路径
-		String path = System.getProperty("java.class.path");
-		int lastIndex = path.lastIndexOf(File.separator) + 1;
-		path = path.substring(0, lastIndex);
+    static {
+        // get bot jar dir
+//		String path = System.getProperty("java.class.path");
+//		int lastIndex = path.lastIndexOf(File.separator) + 1;
+//		path = path.substring(0, lastIndex); // can replace with File.getAbsolutePath();
+        String pathToConfig = System.getProperty("configFile", new File("content.json").getAbsolutePath());
 
-		//检验config.json
-		content = new File(path + "content.json");
-		System.out.println(content);
-		if (!content.exists()) {
-			System.out.println("未找到配置文件\"content.json\"，请添加后重新启动");
-			BilibiliBot1Application.exitApplication();
-		}
-		timer1.TimerManager();
-	}
+        // check config.json is exists, if not, exit the application
+        content = new File(pathToConfig);
+        System.out.println("Load config from file: " + content);
+        if (!content.exists()) {
+			// TODO 自动创建json
+            BotApplication.getInstance().exitApplication("未找到配置文件\"content.json\" 请添加后重新启动");
+        }
+        DAY_TIMER.TimerManager();
+    }
 
-	@Override
-	public int onGroupMessage(@NotNull Bot bot, @NotNull GroupMessageEvent event) {
-		String messageRaw = event.getRawMessage();
-		CatandPlugin.bot = bot;
-		if ("视频推荐".equals(messageRaw)) {
-			share();
-		}
+    public static void share() {
+        try {
+            //读取本地JSON
+            ObjectMapper objectMapper = new ObjectMapper();
+            Config config;
+            config = objectMapper.readValue(CatandPlugin.content, new TypeReference<Config>() {
+            });
 
-		//bilibili直链解析
-		if (messageRaw.contains(BilibiliUtil.BILI_LINK_IDENTIFIER)) {
-			sendMsg = BilibiliUtil.getbilibiliFormatMsgFromLink(messageRaw);
+			List<String> targetGroups = config.getTargetGroups(); // 目标群组
+
+            //选择随机成员
+            Random random = new Random();
+            CatandPlugin.random = random.nextInt(config.getBilibiliVideos().size());
+            String BvId = config.getBilibiliVideos().get(CatandPlugin.random).getUrl();
+
+            //构造消息头部
+            Calendar c = Calendar.getInstance();
+			MsgUtils sendMsg = MsgUtils.builder().text(String.format("[%d月%d日星期%s]今天推荐的%s是:",
+					c.get(Calendar.MONTH) + 1,
+					c.get(Calendar.DAY_OF_MONTH),
+					WEEK[c.get(Calendar.DAY_OF_WEEK) - 1],
+					config.getBilibiliVideos().get(CatandPlugin.random).getType()
+			));
+
+            //获取视频详情并拼接消息
+            String msg = sendMsg.build() + BilibiliUtil.bilibiliFormatMsgBuilder(BvId).build();
+			targetGroups.forEach(targetGroup -> bot.sendGroupMsg(Long.parseLong(targetGroup), msg, false));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+			System.out.println("获取时发生错误, 请检查配置文件是否配置正确");
+        }
+    }
+
+    @Override
+    public int onGroupMessage(@NotNull Bot bot, @NotNull GroupMessageEvent event) {
+        String messageRaw = event.getRawMessage();
+        CatandPlugin.bot = bot;
+        if ("视频推荐".equals(messageRaw)) {
+            share();
+        }
+
+        // bilibili直链解析
+//        if (messageRaw.contains(BilibiliUtil.BILI_LINK_IDENTIFIER)) {
+//            sendMsg = BilibiliUtil.getbilibiliFormatMsgFromLink(messageRaw);
+//            bot.sendGroupMsg(event.getGroupId(), sendMsg.build(), false);
+//        }
+
+		// 使用正则匹配Bilibili链接
+
+		for (String videoLink : bilibiliUrlPattern.split(messageRaw)) {
+			MsgUtils sendMsg;
+			try {
+				sendMsg = BilibiliUtil.getbilibiliFormatMsgFromLink(messageRaw);
+			} catch (Throwable error) {
+				error.printStackTrace();
+				sendMsg = new MsgUtils();
+				sendMsg.text(videoLink + " 或许不是一个正确的Bilibili视频链接");
+			}
 			bot.sendGroupMsg(event.getGroupId(), sendMsg.build(), false);
 		}
 
-		//TODO bilibili站外分享解析
+        //TODO bilibili站外分享解析
 /*
 		if (messageRaw.contains("com.tencent.miniapp_01") && messageRaw.contains("哔哩哔哩")) {
 			MsgChainBean msgChainBean = event.getArrayMsg().get(1);
@@ -78,43 +124,8 @@ public class CatandPlugin extends BotPlugin {
 		}
 */
 
-		return MESSAGE_IGNORE;
-	}
-
-	public static void share() {
-		try {
-			//读取本地JSON
-			ObjectMapper objectMapper = new ObjectMapper();
-			Config config;
-			config = objectMapper.readValue(CatandPlugin.content, new TypeReference<Config>() {
-			});
-
-			//选择随机成员
-			Random random = new Random();
-			CatandPlugin.random = random.nextInt(config.getBilibilis().size());
-			String BV = config.getBilibilis().get(CatandPlugin.random).getUrl();
-
-			//构造消息头部
-			Calendar c = Calendar.getInstance();
-			sendMsg = MsgUtils.builder().text(String.format("[%d月%d日星期%s]今天推荐的%s是:",
-					c.get(Calendar.MONTH) + 1,
-					c.get(Calendar.DAY_OF_MONTH),
-					WEEK[c.get(Calendar.DAY_OF_WEEK) - 1],
-					config.getBilibilis().get(CatandPlugin.random).getType()
-			));
-
-			//获取视频详情并拼接消息
-			StringBuffer sb = new StringBuffer(sendMsg.build()).append(BilibiliUtil.bilibiliFormatMsgBuilder(BV).build());
-			String msg = String.valueOf(sb);
-			bot.sendGroupMsg(GROUP, msg, false);
-
-		} catch (Exception e) {
-			e.printStackTrace();
-			sendMsg = MsgUtils.builder().text("出错了，快去叫人调试");
-			bot.sendGroupMsg(GROUP, sendMsg.build(), false);
-		}
-
-	}
+        return MESSAGE_IGNORE;
+    }
 	/*
     //TODO 从QQ往JSON添加数据
     @Override

@@ -1,13 +1,13 @@
-package com.catand.bilibilibot1.Util;
+package com.catand.bilibilibot1.util;
 
 import com.catand.bilibilibot1.plugin.CatandPlugin;
 
-import java.awt.event.*;
-import java.util.*;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Timer;
+import java.util.TimerTask;
 
-import static java.lang.Thread.sleep;
-
-public class Timer1{
+public class DayTimer {
 	//时间间隔(一天)
 	private static final long PERIOD_DAY = 24 * 60 * 60 * 1000;
 

@@ -1,7 +1,7 @@
-package com.catand.bilibilibot1.Util;
+package com.catand.bilibilibot1.util;
 
-import com.catand.bilibilibot1.Util.JSONUtil.API.BilibiliJSONClass;
-import com.catand.bilibilibot1.Util.JSONUtil.API.BilibiliMiniapp;
+import com.catand.bilibilibot1.util.json.API.BilibiliJSONClass;
+import com.catand.bilibilibot1.util.json.API.BilibiliMiniapp;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mikuac.shiro.common.utils.MsgUtils;
@@ -84,7 +84,7 @@ public class BilibiliUtil {
 			BilibiliMiniapp bilibiliMiniapp;
 			bilibiliMiniapp = objectMapper.readValue(JSON, new TypeReference<BilibiliMiniapp>() {
 			});
-			return bilibiliMiniapp.getMeta().getDetail_1().getQqdocurl();
+			return bilibiliMiniapp.getMeta().getDetail().getQqdocurl();
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;

@@ -1,4 +1,4 @@
-package com.catand.bilibilibot1.Util.JSONUtil.config;
+package com.catand.bilibilibot1.util.json.config;
 
 import lombok.Data;
 

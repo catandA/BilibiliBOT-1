@@ -1,4 +1,4 @@
-package com.catand.bilibilibot1.Util.JSONUtil.API;
+package com.catand.bilibilibot1.util.json.API;
 
 @lombok.Data
 public class BilibiliJSONClass {
