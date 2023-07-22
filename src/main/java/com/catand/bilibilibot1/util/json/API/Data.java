@@ -1,4 +1,4 @@
-package com.catand.bilibilibot1.Util.JSONUtil.API;
+package com.catand.bilibilibot1.util.json.API;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -17,7 +17,7 @@ public class Data {
     private long pubdate;
     private long ctime;
     private String desc;
-    private List<Desc_v2> desc_v2;
+    private List<Desc> descList;
     private int state;
     private int duration;
     private long mission_id;
@@ -35,13 +35,13 @@ public class Data {
     private List<Page> pages;
     private Subtitle subtitle;
     private boolean is_season_display;
-    private User_garb user_garb;
-    private Honor_reply honor_reply;
+    private UserGarb user_garb;
+    private HonorReply honor_reply;
 
     public Data() {
     }
 
-    public Data(String bvid, long aid, int videos, int tid, String tname, int coryright, String pic, String title, long pubdate, long ctime, String desc, List<Desc_v2> desc_v2, int state, int duration, long mission_id, Rights rights, Owner owner, Stat stat, String dynamic, long cid, Dimension dimension, Owner premiere, int teenage_mode, boolean no_cache, List<Page> pages, Subtitle subtitle, boolean is_season_display, User_garb user_garb, Honor_reply honor_reply) {
+    public Data(String bvid, long aid, int videos, int tid, String tname, int coryright, String pic, String title, long pubdate, long ctime, String desc, List<Desc> descList, int state, int duration, long mission_id, Rights rights, Owner owner, Stat stat, String dynamic, long cid, Dimension dimension, Owner premiere, int teenage_mode, boolean no_cache, List<Page> pages, Subtitle subtitle, boolean is_season_display, UserGarb user_garb, HonorReply honor_reply) {
         this.bvid = bvid;
         this.aid = aid;
         this.videos = videos;
@@ -53,7 +53,7 @@ public class Data {
         this.pubdate = pubdate;
         this.ctime = ctime;
         this.desc = desc;
-        this.desc_v2 = desc_v2;
+        this.descList = descList;
         this.state = state;
         this.duration = duration;
         this.mission_id = mission_id;

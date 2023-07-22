@@ -21,6 +21,29 @@
 示例：
 ![示例](https://github.com/catandA/BilibiliBOT-1/blob/main/.README_images/9584a2c7.png)
 
+## 配置文件说明
+
+> 实际JSON不存在注释, 下方代码带有注释仅为帮助理解
+
+```json5
+{
+  "targetGroups": [
+    // 目标群组, 可以为多个, 但是有封号风险
+    "1145141919",
+    "1919810114"
+    // ...
+  ],
+  "bilibiliVideos": [
+    // 推荐视频列表
+    {
+      "name": "视频名称",
+      "type": "视频类型", // 例如: 游戏PV
+      "url": "BVRTx4090" // 视频BV号, 我也不知道为什么叫做url
+    }
+  ]
+}
+```
+
 ## 技术框架
 
 本项目使用Spring框架与[Shiro](https://github.com/MisakaTAT/Shiro/), 对 [哔哩哔哩的公开API](https://api.bilibili.com/x/web-interface/view?bvid=${bid}) 进行HTTPS请求, 获取到JSON格式数据之后反序列化读取，并进行QQ消息构造再传回前端发送数据

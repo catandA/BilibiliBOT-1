@@ -1,4 +1,4 @@
-package com.catand.bilibilibot1.Util;
+package com.catand.bilibilibot1.util;
 
 import java.io.*;
 import java.net.URL;

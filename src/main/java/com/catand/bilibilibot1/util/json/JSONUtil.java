@@ -1,4 +1,4 @@
-package com.catand.bilibilibot1.Util.JSONUtil;
+package com.catand.bilibilibot1.util.json;
 
 import com.alibaba.fastjson.JSONException;
 import com.fasterxml.jackson.core.JsonProcessingException;

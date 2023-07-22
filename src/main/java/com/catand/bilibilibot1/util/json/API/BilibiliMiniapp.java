@@ -1,13 +1,13 @@
-package com.catand.bilibilibot1.Util.JSONUtil.API;
+package com.catand.bilibilibot1.util.json.API;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Detail_1 {
-	String qqdocurl;
+public class BilibiliMiniapp {
+	Meta meta;
 
-	public Detail_1() {
+	public BilibiliMiniapp() {
 	}
 }
